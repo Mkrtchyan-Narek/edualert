@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/edualert/static/js/main.9488d09a.js",
+    "index.html": "/edualert/index.html",
+    "main.9488d09a.js.map": "/edualert/static/js/main.9488d09a.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.9488d09a.js"
+  ]
+}
