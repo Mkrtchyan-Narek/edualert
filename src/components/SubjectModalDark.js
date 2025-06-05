@@ -55,9 +55,11 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
+      PaperProps={{ sx: { backgroundColor: '#121212', color: '#e0e0e0' } }}
+    >
       <DialogTitle>
-        <Typography variant="h6" fontSize={18}>
+        <Typography variant="h6" fontSize={18} color="#FF5722">
           {(sign === "-")
             ? (mode === "task" ? "Շտապ Առաջադրանքի Հեռացում" : "Առարկայի Հեռացում")
             : (mode === "task" ? "Շտապ Առաջադրանքի Ավելացում" : "Առարկայի Ավելացում")}
@@ -70,7 +72,19 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
           placeholder="Օրինակ՝ Քիմիա կամ Առաջադրանք 1"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          sx={{ mb: 2 }}
+          sx={{
+            mb: 2,
+            input: { color: '#e0e0e0' },
+            label: { color: '#e0e0e0' },
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': { borderColor: '#555' },
+              '&:hover fieldset': { borderColor: '#FF5722' },
+              '&.Mui-focused fieldset': { borderColor: '#FF5722' },
+            },
+            '& label.Mui-focused': {
+  color: '#FF5722',
+},
+          }}
         />
         {sign === "+" && mode === "task" && (
           <>
@@ -82,7 +96,19 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
               placeholder="Գրեք առաջադրանքի նկարագրությունը"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              sx={{ mb: 2 }}
+              sx={{
+                mb: 2,
+                input: { color: '#e0e0e0' },
+                label: { color: '#e0e0e0' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: '#555' },
+                  '&:hover fieldset': { borderColor: '#FF5722' },
+                  '&.Mui-focused fieldset': { borderColor: '#FF5722' },
+                },
+                '& label.Mui-focused': {
+  color: '#FF5722',
+},
+              }}
             />
             <TextField
               fullWidth
@@ -90,16 +116,43 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
               placeholder="Օրինակ՝ 2025-06-01"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              sx={{ mb: 2 }}
+              sx={{
+                mb: 2,
+                input: { color: '#e0e0e0' },
+                label: { color: '#e0e0e0' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: '#555' },
+                  '&:hover fieldset': { borderColor: '#FF5722' },
+                  '&.Mui-focused fieldset': { borderColor: '#FF5722' },
+                },
+                '& label.Mui-focused': {
+  color: '#FF5722',
+},
+              }}
             />
           </>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleSubmit} variant="contained" sx={{ backgroundColor: '#26b8b8', '&:hover': { backgroundColor: '#1ea0a0' } }}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            backgroundColor: '#FF5722',
+            '&:hover': { backgroundColor: '#e64a19' },
+            color: '#fff',
+          }}
+        >
           Պահպանել
         </Button>
-        <Button onClick={onClose} sx={{ backgroundColor: '#ffffff' }}>
+        <Button
+          onClick={onClose}
+          sx={{
+            backgroundColor: '#333',
+            color: '#e0e0e0',
+            '&:hover': { backgroundColor: '#555' },
+          }}
+        >
           Փակել
         </Button>
       </DialogActions>

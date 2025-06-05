@@ -77,10 +77,20 @@ export default function ModalDialog({ permission, classCode, text, url, open, op
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{option}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ sx: { backgroundColor: '#121212', color: '#e0e0e0' } }}
+    >
+      <DialogTitle>
+        <Typography variant="h6" color="#FF5722">
+          {option}
+        </Typography>
+      </DialogTitle>
       <DialogContent>
-        {image != "" && (
+        {image !== "" && (
           <Box mb={2}>
             <img
               src={image}
@@ -95,26 +105,67 @@ export default function ModalDialog({ permission, classCode, text, url, open, op
           placeholder="Գրեք..."
           fullWidth
           value={input}
-          onChange={permission == "write" ? (e) => setInput(e.target.value) : ()=>{}}
-          sx={{ mb: 2 }}
+          onChange={permission === "write" ? (e) => setInput(e.target.value) : () => {}}
+          sx={{
+  mb: 2,
+  '& .MuiOutlinedInput-root': {
+    '& fieldset': { borderColor: '#555' },
+    '&:hover fieldset': { borderColor: '#FF5722' },
+    '&.Mui-focused fieldset': { borderColor: '#FF5722' },
+  },
+  '& .MuiInputBase-input': {
+    color: '#e0e0e0',
+  },
+  '& label': {
+    color: '#e0e0e0',
+  }
+}}
+
         />
-        {permission == "write" ? (<>
-          <Button variant="contained" component="label" sx={{ mr: 2 }}>
-            Ներբեռնել լուսանկար
-            <input type="file" hidden onChange={handleImageUpload} />
-          </Button>
-          {imageName && (
-            <Typography variant="body2" color="textSecondary">
-              Ընտրված ֆայլը՝ {imageName}
-            </Typography>
-          )}
-        </>) : null}
+        {permission === "write" && (
+          <>
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                mr: 2,
+                backgroundColor: '#FF5722',
+                '&:hover': { backgroundColor: '#e64a19' },
+                color: '#fff'
+              }}
+            >
+              Ներբեռնել լուսանկար
+              <input type="file" hidden onChange={handleImageUpload} />
+            </Button>
+            {imageName && (
+              <Typography variant="body2" color="textSecondary">
+                Ընտրված ֆայլը՝ {imageName}
+              </Typography>
+            )}
+          </>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button disabled={permission=="read"} onClick={handleSubmit} variant="contained" sx={{ backgroundColor: '#26b8b8', '&:hover': { backgroundColor: '#1ea0a0' } }}>
+        <Button
+          disabled={permission === "read"}
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            backgroundColor: '#FF5722',
+            '&:hover': { backgroundColor: '#e64a19' },
+            color: '#fff'
+          }}
+        >
           Պահպանել
         </Button>
-        <Button onClick={onClose} sx={{ backgroundColor: '#ffffff' }}>
+        <Button
+          onClick={onClose}
+          sx={{
+            backgroundColor: '#333',
+            color: '#e0e0e0',
+            '&:hover': { backgroundColor: '#555' },
+          }}
+        >
           Փակել
         </Button>
       </DialogActions>

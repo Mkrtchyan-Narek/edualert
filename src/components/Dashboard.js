@@ -119,7 +119,7 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
     </IconButton>
   </> ) : null}
   <IconButton onClick={() => {onLogout(); setClassCode(""); 
-      document.cookie = `classCode=noClass&permission=read; path=/; max-age=3600`;}} sx={{ backgroundColor: '#26b8b8', color: '#fff', '&:hover': { backgroundColor: '#1ea0a0' } }}>
+      document.cookie = "classCode=noClass&permission=read; path=/; max-age=3600;"}} sx={{ backgroundColor: '#26b8b8', color: '#fff', '&:hover': { backgroundColor: '#1ea0a0' } }}>
     <LogoutIcon />
   </IconButton>
 </Box>

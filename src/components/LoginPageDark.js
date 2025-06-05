@@ -20,7 +20,7 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
   
   useEffect(() => {
     if(document.cookie == "" || !document.cookie.includes("permission=")) {
-      document.cookie = "classCode=noClass&permission=read; path=/; max-age=3600";
+      document.cookie = `classCode=noClass&permission=read; path=/; max-age=3600`;
       return;
     }
     const cookieValue = `; ${document.cookie}`;
@@ -65,8 +65,12 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
 
   return (
     <>
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, mx: 'auto' }}>
-        <Typography variant="h5" mb={2}>Մուտք</Typography>
+      <Paper
+  elevation={0}
+  variant="outlined"
+  sx={{ p: 4, maxWidth: 400, mx: 'auto', backgroundColor: '#121212', borderColor: 'rgba(255, 255, 255, 0.23)', borderRadius: 1 }}
+>
+        <Typography variant="h5" mb={2} style={{color: "#e0e0e0"}}>Մուտք</Typography>
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="Դասարան"
@@ -74,6 +78,15 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
             onChange={(e) => setClassCode(e.target.value)}
             fullWidth
             margin="normal"
+            sx={{input: { color: '#e0e0e0' },          // text color inside input
+    label: { color: '#e0e0e0' },          // label color
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: '#555' },      // border color
+      '&:hover fieldset': { borderColor: '#FF5722' },
+      '&.Mui-focused fieldset': { borderColor: '#FF5722' },  // focused border
+    },'& label.Mui-focused': {
+  color: '#FF5722',
+},}}
           />
           <TextField
             label="Գաղտնաբառ"
@@ -82,6 +95,15 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
             onChange={(e) => setPassword(e.target.value)}
             fullWidth
             margin="normal"
+            sx={{input: { color: '#e0e0e0' },          // text color inside input
+    label: { color: '#e0e0e0' },          // label color
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': { borderColor: '#555' },      // border color
+      '&:hover fieldset': { borderColor: '#FF5722' },
+      '&.Mui-focused fieldset': { borderColor: '#FF5722' },  // focused border
+    },'& label.Mui-focused': {
+  color: '#FF5722',
+},}}
           />
           <Button
             type="submit"
@@ -89,8 +111,8 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
             fullWidth
             sx={{
               mt: 3,
-              backgroundColor: '#26b8b8',
-              '&:hover': { backgroundColor: '#1ea0a0' },
+              backgroundColor: '#FF5722',
+              '&:hover': { backgroundColor: '#e64a19' },
             }}
           >
             Մուտք
