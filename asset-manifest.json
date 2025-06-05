@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/edualert/static/js/main.b458d1a7.js",
+    "main.js": "/edualert/static/js/main.feb8f37d.js",
     "index.html": "/edualert/index.html",
-    "main.b458d1a7.js.map": "/edualert/static/js/main.b458d1a7.js.map"
+    "main.feb8f37d.js.map": "/edualert/static/js/main.feb8f37d.js.map"
   },
   "entrypoints": [
-    "static/js/main.b458d1a7.js"
+    "static/js/main.feb8f37d.js"
   ]
 }
