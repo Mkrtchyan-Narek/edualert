@@ -1,0 +1,97 @@
+{
+  "homepage": ".",
+  "main": "public/electron.js",
+  "name": "chatify",
+  "version": "0.1.0",
+  "author": "Narek Mkrtchyan",
+  "description": "An app created for educational purposes",
+  "private": true,
+  "build": {
+  "appId": "com.edualrt.desktop",
+  "productName": "EduAlert",
+  "files": [
+    "build/**/*",
+    "node_modules/**/*",
+    "public/electron.js"
+  ],
+  "extraResources": [
+    {
+      "from": "build/",
+      "to": "build",
+      "filter": ["**/*"]
+    }
+  ],
+  "win": {
+    "target": "nsis"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "EduAlert"
+  }
+},
+  "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/joy": "^5.0.0-alpha.79",
+    "@mui/material": "^5.12.1",
+    "@reduxjs/toolkit": "^1.9.4",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "electron-is-dev": "^3.0.1",
+    "firebase": "^9.23.0",
+    "mui-file-input": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.5",
+    "react-redux": "^8.0.5",
+    "react-router-dom": "^6.10.0",
+    "react-scripts": "5.0.1",
+    "react-window": "^1.8.9",
+    "simple-string-validator": "^1.0.3",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "desktop": "electron .",
+    "eject": "react-scripts eject",
+    "react-build": "react-scripts build",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dist": "electron-builder",
+    "electron-pack": "electron-builder --win --x64",
+    "preelectron-pack": "npm run build"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.4",
+    "electron-builder": "^26.0.12",
+    "prettier": "^2.8.8",
+    "wait-on": "^9.0.3"
+  }
+}
