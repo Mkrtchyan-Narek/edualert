@@ -7,6 +7,7 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [classCode, setClassCode] = useState("");
   const [permission, setPermission] = useState("read");
+  const [school, setSchool] = useState("164");
 
   return (
     <Box
@@ -26,7 +27,6 @@ export default function App() {
         sx={{
           background: 'linear-gradient(135deg, #26b8b8, #1ea0a0)',
           borderRadius: 2,
-          // cursor: 'pointer',
         }}
       >
         <Toolbar sx={{ minHeight: 72, justifyContent: 'center' }}>
@@ -45,8 +45,8 @@ export default function App() {
       <Container sx={{ mt: 4 }}>
         {
           loggedIn
-              ? <Dashboard classCode={classCode} setClassCode={setClassCode} permission={permission} />
-              : <LoginPage onLogin={() => setLoggedIn(true)} classCode={classCode} setClassCode={setClassCode} setPermission={setPermission} />
+              ? <Dashboard school={school} classCode={classCode} setClassCode={setClassCode} permission={permission} />
+              : <LoginPage school={school} setSchool={setSchool} onLogin={() => setLoggedIn(true)} classCode={classCode} setClassCode={setClassCode} setPermission={setPermission} />
         }
       </Container>
     </Box>

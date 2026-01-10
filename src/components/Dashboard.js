@@ -13,12 +13,13 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import {
   doc,
   getDoc,
-  onSnapshot
+  onSnapshot,
+  updateDoc
 } from "firebase/firestore";
 import { db, auth } from "../firebase.js";
 import { signOut } from "firebase/auth";
 
-export default function Dashboard({ permission, onLogout, classCode, setClassCode }) {
+export default function Dashboard({ permission, classCode, school }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [subjectModalOpen, setSubjectModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
@@ -39,9 +40,33 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
     }
   };
 
+  const handleChange = async (field) => {
+    if (!auth.currentUser || !classCode) return;
+
+    const docRef = doc(db, school, classCode);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) return;
+
+    const log = docSnap.data().log || [];
+
+    const now = new Date();
+    const formattedDate = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
+
+    const newEntry = {
+      editor: auth.currentUser.email,
+      time: formattedDate,
+      field: field,
+    };
+
+    const newLog = log.length < 25 ? [...log, newEntry] : [newEntry]; 
+
+    await updateDoc(docRef, { log: newLog });
+  }
+
   useEffect(() => {
   const fetchData = async () => {
-    const docSnap = await getDoc(doc(db, "164", classCode));
+    const docSnap = await getDoc(doc(db, school, classCode));
     
     const data = docSnap.data();
     
@@ -61,7 +86,7 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
 
   fetchData();
 
-  const unsubscribe = onSnapshot(doc(db, "164", classCode), (snapshot) => {
+  const unsubscribe = onSnapshot(doc(db, school, classCode), (snapshot) => {
     const data = snapshot.data();
 
     const newSubjects = Object.entries(data.homeworks || {}).map(([key, value]) => ({
@@ -163,7 +188,9 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
         text={text}
         classCode={classCode}
         onClose={() => setModalOpen(false)}
+        handleChange={handleChange}
         permission={permission}
+        school={school}
       />
       <SubjectModalDialog
         open={subjectModalOpen}
@@ -171,6 +198,8 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
         onClose={() => setSubjectModalOpen(false)}
         sign={sign}
         mode={mode}
+        handleChange={handleChange}
+        school={school}
       />
     </>
   );

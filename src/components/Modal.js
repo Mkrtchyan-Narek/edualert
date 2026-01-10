@@ -16,7 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase.js";
 
-export default function ModalDialog({ permission, classCode, text, open, option, onClose }) {
+export default function ModalDialog({ permission, classCode, text, open, option, onClose, handleChange, school }) {
   const [input, setInput] = useState(text);
 
   useEffect(() => {
@@ -26,10 +26,11 @@ export default function ModalDialog({ permission, classCode, text, open, option,
   }, [open]);
 
   const handleSubmit = async () => {
-    const docSnap = await getDoc(doc(db, "164", classCode));
+    const docSnap = await getDoc(doc(db, school, classCode));
     let newHomeworks = docSnap.data().homeworks;
     newHomeworks[option] = {text: input}
-    updateDoc(doc(db, "164", classCode), {homeworks: newHomeworks});
+    updateDoc(doc(db, school, classCode), {homeworks: newHomeworks});
+    handleChange(option);
     onClose();
   };
 

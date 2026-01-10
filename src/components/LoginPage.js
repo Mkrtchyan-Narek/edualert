@@ -12,38 +12,44 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase.js";
 
-export default function LoginPage({ setPermission, onLogin, classCode, setClassCode }) {
-  const [school, setSchool] = useState('164');
+export default function LoginPage({ setPermission, onLogin, classCode, setClassCode, school, setSchool }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
-    const init = async () => {
-      await setPersistence(auth, browserLocalPersistence);
+  const init = async () => {
+    await setPersistence(auth, browserLocalPersistence);
+    const user = auth.currentUser;
+    const storedClass = localStorage.getItem('classCode');
+    const storedSchool = localStorage.getItem('school');
 
-      const storedClass = localStorage.getItem('classCode');
-      const storedSchool = localStorage.getItem('school');
-      const user = auth.currentUser;
+    if (user && storedClass && storedSchool) {
+      setEmail(user.email || '');
+      setClassCode(storedClass);
+      setSchool(storedSchool);
 
-      if (storedClass) setClassCode(storedClass);
-      if (storedSchool) setSchool(storedSchool);
-      if (user && storedClass && storedSchool) {
-        const docSnap = await getDoc(doc(db, storedSchool, storedClass));
-        const students = docSnap.data()?.students || [];
-        if (students.includes(user.email)) {
-          setEmail(user.email);
-          setPermission("write");
-          onLogin();
-        }
+      setPermission("write");
+      onLogin();
+
+      const docSnap = await getDoc(doc(db, storedSchool, storedClass));
+      const students = docSnap.data()?.students || [];
+      if (!students.includes(user.email)) {
+        await signOut(auth);
+        localStorage.removeItem('classCode');
+        localStorage.removeItem('school');
+        window.location.reload();
+        alert("You no longer have access to this class.");
       }
-    };
-    init();
-  }, [setClassCode, setPermission, onLogin]);
+    }
+  };
+  init();
+}, [setClassCode, setPermission, onLogin]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,7 +86,7 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
       <Paper elevation={4} sx={{ p: 4, maxWidth: 400, mx: 'auto', borderRadius: 3 }}>
         <Typography variant="h5" mb={2}>Մուտք</Typography>
         <Box component="form" onSubmit={handleSubmit}>
-          <FormControl fullWidth margin="normal">
+          {/* <FormControl fullWidth margin="normal">
             <InputLabel>Նախընտրած դպրոց</InputLabel>
             <Select
               value={school}
@@ -89,7 +95,7 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
             >
               <MenuItem value="164">164</MenuItem>
             </Select>
-          </FormControl>
+          </FormControl> */}
 
           <TextField
             label="Դասարան"

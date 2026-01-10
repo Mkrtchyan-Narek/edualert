@@ -12,7 +12,7 @@ import {
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase.js";
 
-export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
+export default function ModalDialog({ classCode, open, onClose, sign, mode, handleChange, school }) {
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -24,7 +24,7 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
   }, [open]);
 
   const handleSubmit = async () => {
-    const docRef = doc(db, "164", classCode);
+    const docRef = doc(db, school, classCode);
     const docSnap = await getDoc(docRef);
     const data = docSnap.data();
     const field = mode === "task" ? "tasks" : "homeworks";
@@ -36,6 +36,7 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
         return;
       }
       delete items[title];
+      handleChange(`removed from ${mode === "task" ? "tasks" : "subjects"}`);
     } else {
       if (items[title]) {
         setTitle("Արդեն կա");
@@ -43,7 +44,8 @@ export default function ModalDialog({ classCode, open, onClose, sign, mode }) {
       }
       items[title] = mode === "task"
         ? { text, deadline }
-        : { text: "", url: "" };
+        : { text: "" };
+      handleChange(`added to ${mode === "task" ? "tasks" : "subjects"}`);
     }
 
     await updateDoc(docRef, { [field]: items });
