@@ -7,6 +7,7 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [classCode, setClassCode] = useState("");
   const [permission, setPermission] = useState("read");
+
   return (
     <Box
       sx={{
@@ -44,7 +45,7 @@ export default function App() {
       <Container sx={{ mt: 4 }}>
         {
           loggedIn
-              ? <Dashboard onLogout={() => setLoggedIn(false)} classCode={classCode} setClassCode={setClassCode} permission={permission} />
+              ? <Dashboard classCode={classCode} setClassCode={setClassCode} permission={permission} />
               : <LoginPage onLogin={() => setLoggedIn(true)} classCode={classCode} setClassCode={setClassCode} setPermission={setPermission} />
         }
       </Container>

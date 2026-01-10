@@ -15,7 +15,8 @@ import {
   getDoc,
   onSnapshot
 } from "firebase/firestore";
-import { db } from "../firebase.js";
+import { db, auth } from "../firebase.js";
+import { signOut } from "firebase/auth";
 
 export default function Dashboard({ permission, onLogout, classCode, setClassCode }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,10 +24,20 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
   const [selectedOption, setSelectedOption] = useState('');
   const [subjects, setSubjects] = useState([]);
   const [text, setText] = useState("");
-  const [url, setUrl] = useState("");
   const [sign, setSign] = useState("");
   const [tasks, setTasks] = useState([]);
   const [mode, setMode] = useState("subject");
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth); 
+      localStorage.removeItem('classCode');
+      localStorage.removeItem('school');
+      window.location.reload();
+    } catch (error) {
+      console.error("Sign-out error:", error);
+    }
+  };
 
   useEffect(() => {
   const fetchData = async () => {
@@ -37,7 +48,6 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
     const newSubjects = Object.entries(data.homeworks || {}).map(([key, value]) => ({
       title: key,
       text: value.text,
-      url: value.url
     }));
     setSubjects(newSubjects);
 
@@ -56,8 +66,7 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
 
     const newSubjects = Object.entries(data.homeworks || {}).map(([key, value]) => ({
       title: key,
-      text: value.text,
-      url: value.url
+      text: value.text
     }));
     setSubjects(newSubjects);
 
@@ -76,7 +85,6 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
   const handleButtonClick = (option) => {
     setSelectedOption(option.title);
     setText(option.text);
-    setUrl(option.url);
     setModalOpen(true);
   };
 
@@ -108,8 +116,7 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
       <AddIcon />
     </IconButton>
   </> ) : null}
-  <IconButton onClick={() => {onLogout(); setClassCode(""); 
-      document.cookie = "classCode=noClass&permission=read; path=/; max-age=3600;"}} sx={{ backgroundColor: '#26b8b8', color: '#fff', '&:hover': { backgroundColor: '#1ea0a0' }, boxShadow: 2 }}>
+  <IconButton onClick={() => handleSignOut()} sx={{ backgroundColor: '#26b8b8', color: '#fff', '&:hover': { backgroundColor: '#1ea0a0' }, boxShadow: 2 }}>
     <LogoutIcon />
   </IconButton>
 </Box>
@@ -154,7 +161,6 @@ export default function Dashboard({ permission, onLogout, classCode, setClassCod
         open={modalOpen}
         option={selectedOption}
         text={text}
-        url={url}
         classCode={classCode}
         onClose={() => setModalOpen(false)}
         permission={permission}

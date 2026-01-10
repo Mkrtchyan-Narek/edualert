@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -7,71 +7,102 @@ import {
   Typography,
   Snackbar,
   Alert,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import { db } from "../firebase.js";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase.js";
 
 export default function LoginPage({ setPermission, onLogin, classCode, setClassCode }) {
+  const [school, setSchool] = useState('164');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  
-  useEffect(() => {
-    if(document.cookie == "" || !document.cookie.includes("permission=")) {
-      document.cookie = "classCode=noClass&permission=read; path=/; max-age=3600";
-      return;
-    }
-    const cookieValue = `; ${document.cookie}`;
-    const parts = cookieValue.split(`; classCode=`);
-    let code, permission;
-    const combined = parts.pop().split(';').shift();
-    const [classCodePart, permissionPart] = combined.split('&');
-    code = classCodePart.split('=')[1] || classCodePart;
-    permission = permissionPart.split('=')[1];
 
-    if (code != "noClass") {
-      setClassCode(code);
-      setPermission(permission);
-      onLogin();
+  useEffect(() => {
+    const init = async () => {
+      await setPersistence(auth, browserLocalPersistence);
+
+      const storedClass = localStorage.getItem('classCode');
+      const storedSchool = localStorage.getItem('school');
+      const user = auth.currentUser;
+
+      if (storedClass) setClassCode(storedClass);
+      if (storedSchool) setSchool(storedSchool);
+      if (user && storedClass && storedSchool) {
+        const docSnap = await getDoc(doc(db, storedSchool, storedClass));
+        const students = docSnap.data()?.students || [];
+        if (students.includes(user.email)) {
+          setEmail(user.email);
+          setPermission("write");
+          onLogin();
+        }
+      }
     };
-  }, []);
+    init();
+  }, [setClassCode, setPermission, onLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if(password == "" || classCode == "") {
-      setSnackbar({ open: true, message: 'Սխալ դասարան կամ գաղտնաբառ', severity: 'error' });
+    if (!email || !password || !classCode) {
+      setSnackbar({ open: true, message: 'Խնդրում ենք լրացնել բոլոր դաշտերը', severity: 'error' });
+      return;
     }
-    const docSnap = await getDoc(doc(db, "164", classCode));
-    if (docSnap.data()?.password == password) {
-      setClassCode(classCode);
-      document.cookie = `classCode=${classCode}&permission=read; path=/; max-age=3600`;
-      setPermission("read");
-      onLogin();
-    } else if (docSnap.data()?.adminPassword == password) {
-      setClassCode(classCode);
-      document.cookie = `classCode=${classCode}&permission=write; path=/; max-age=3600`;
-      setPermission("write");
-      onLogin();
-    } else {
-      setSnackbar({ open: true, message: 'Սխալ դասարան կամ գաղտնաբառ', severity: 'error' });
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      const docSnap = await getDoc(doc(db, school, classCode));
+      const students = docSnap.data()?.students || [];
+
+      if (students.includes(user.email)) {
+        localStorage.setItem('classCode', classCode);
+        localStorage.setItem('school', school);
+
+        setPermission("write");
+        onLogin();
+      } else {
+        setSnackbar({ open: true, message: 'Դուք չունեք մուտքի թույլտվություն', severity: 'error' });
+      }
+    } catch {
+      setSnackbar({ open: true, message: 'Սխալ էլ․ հասցե կամ գաղտնաբառ', severity: 'error' });
     }
   };
 
-  const handleClose = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const handleClose = () => setSnackbar({ ...snackbar, open: false });
 
   return (
     <>
       <Paper elevation={4} sx={{ p: 4, maxWidth: 400, mx: 'auto', borderRadius: 3 }}>
         <Typography variant="h5" mb={2}>Մուտք</Typography>
         <Box component="form" onSubmit={handleSubmit}>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Նախընտրած դպրոց</InputLabel>
+            <Select
+              value={school}
+              label="Նախընտրած դպրոց"
+              onChange={(e) => setSchool(e.target.value)}
+            >
+              <MenuItem value="164">164</MenuItem>
+            </Select>
+          </FormControl>
+
           <TextField
             label="Դասարան"
             value={classCode}
             onChange={(e) => setClassCode(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Էլ․ հասցե"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             fullWidth
             margin="normal"
           />

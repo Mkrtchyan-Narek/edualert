@@ -14,66 +14,23 @@ import {
   getDoc,
   updateDoc
 } from "firebase/firestore";
-import { db, storage } from "../firebase.js";
-import { getDownloadURL, ref, uploadBytesResumable, deleteObject } from "firebase/storage";
+import { db } from "../firebase.js";
 
-export default function ModalDialog({ permission, classCode, text, url, open, option, onClose }) {
+export default function ModalDialog({ permission, classCode, text, open, option, onClose }) {
   const [input, setInput] = useState(text);
-  const [image, setImage] = useState(url);
-  const [imageName, setImageName] = useState('');
-  const [file, setFile] = useState(null);
 
   useEffect(() => {
     if (open) {
       setInput(text);
-      setImage(url);
-      setImageName('');
     }
   }, [open]);
-
-  const handleImageUpload = (e) => {
-    const fileNew = e.target.files[0];
-    setImageName(fileNew ? fileNew.name : '');
-    setFile(fileNew);
-  };
-
-  const uploadImg = async (newHomeworks) => {
-    const storageRef = ref(storage, `/164/homeworks/${classCode}/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    uploadTask.on(
-      "state_changed",
-      () => {},
-      (err) => console.log(err),
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then(async (url) => {
-          setImage(url);
-          newHomeworks[option] = {url: url, text: input}
-          updateDoc(doc(db, "164", classCode), {homeworks: newHomeworks});
-          onClose();
-        });
-      }
-    );
-  }
 
   const handleSubmit = async () => {
     const docSnap = await getDoc(doc(db, "164", classCode));
     let newHomeworks = docSnap.data().homeworks;
-    let newUrl = image;
-    if(file) {
-      newUrl = await uploadImg(newHomeworks);
-      if(url.includes("firebasestorage.googleapis.com/v0/b/homeworklogger")) {
-        const startIndex = 79;
-        const endIndex = url.indexOf('?alt=media');
-        const encodedPath = url.substring(startIndex, endIndex);
-        const decodedPath = decodeURIComponent(encodedPath);
-        const fileRef = ref(storage, decodedPath);
-        deleteObject(fileRef);
-      }
-    } else {
-      newHomeworks[option] = {url: newUrl, text: input}
-      updateDoc(doc(db, "164", classCode), {homeworks: newHomeworks});
-      onClose();
-    }
+    newHomeworks[option] = {text: input}
+    updateDoc(doc(db, "164", classCode), {homeworks: newHomeworks});
+    onClose();
   };
 
   return (
@@ -94,17 +51,6 @@ export default function ModalDialog({ permission, classCode, text, url, open, op
       </DialogTitle>
 
       <DialogContent sx={{ pt: 1 }}>
-        {image && (
-          <img
-            src={image}
-            alt="Preview"
-            style={{
-              maxWidth: '100%',
-              borderRadius: 8,
-              objectFit: 'contain',
-            }}
-          />
-        )}
 
         <TextField
           multiline
@@ -117,27 +63,7 @@ export default function ModalDialog({ permission, classCode, text, url, open, op
               ? (e) => setInput(e.target.value)
               : undefined
           }
-          sx={{ mb: 2 }}
         />
-
-        {permission === 'write' && (
-          <Box display="flex" alignItems="center" gap={2}>
-            <Button
-              variant="outlined"
-              component="label"
-              sx={{ borderRadius: 2 }}
-            >
-              Ներբեռնել լուսանկար
-              <input type="file" hidden onChange={handleImageUpload} />
-            </Button>
-
-            {imageName && (
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {imageName}
-              </Typography>
-            )}
-          </Box>
-        )}
       </DialogContent>
 
       <DialogActions sx={{ px: 3, pb: 2 }}>
