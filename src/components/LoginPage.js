@@ -7,12 +7,14 @@ import {
   Typography,
   Snackbar,
   Alert,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
 } from '@mui/material';
-import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, signOut } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence,
+  signOut,
+  createUserWithEmailAndPassword
+} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase.js";
 
@@ -20,62 +22,98 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [mode, setMode] = useState('signin');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-  const init = async () => {
-    await setPersistence(auth, browserLocalPersistence);
-    const user = auth.currentUser;
-    const storedClass = localStorage.getItem('classCode');
-    const storedSchool = localStorage.getItem('school');
+    const init = async () => {
+      await setPersistence(auth, browserLocalPersistence);
+      const user = auth.currentUser;
+      const storedClass = localStorage.getItem('classCode');
+      const storedSchool = localStorage.getItem('school');
 
-    if (user && storedClass && storedSchool) {
-      setEmail(user.email || '');
-      setClassCode(storedClass);
-      setSchool(storedSchool);
-
-      setPermission("write");
-      onLogin();
-
-      const docSnap = await getDoc(doc(db, storedSchool, storedClass));
-      const students = docSnap.data()?.students || [];
-      if (!students.includes(user.email)) {
-        await signOut(auth);
-        localStorage.removeItem('classCode');
-        localStorage.removeItem('school');
-        window.location.reload();
-        alert("You no longer have access to this class.");
+      if (user && storedClass && storedSchool) {
+        setEmail(user.email || '');
+        setClassCode(storedClass);
+        setSchool(storedSchool);
+        setPermission("write");
+        onLogin();
       }
-    }
-  };
-  init();
-}, [setClassCode, setPermission, onLogin]);
-
+    };
+    init();
+  }, [setClassCode, setPermission, onLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    setLoading(true);
+
     if (!email || !password || !classCode) {
-      setSnackbar({ open: true, message: 'Խնդրում ենք լրացնել բոլոր դաշտերը', severity: 'error' });
+      setSnackbar({ open: true, message: 'Լրացրեք բոլոր դաշտերը', severity: 'error' });
+      setLoading(false);
       return;
     }
 
+    const activeClass = classCode;
+    const activeSchool = school;
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const snap = await getDoc(doc(db, activeSchool, activeClass));
+      const students = snap.data()?.students || [];
 
-      const docSnap = await getDoc(doc(db, school, classCode));
-      const students = docSnap.data()?.students || [];
+      if (!students.includes(email)) {
+        setSnackbar({
+          open: true,
+          message: 'Ձեր էլ․ հասցեն դասարանում գրանցված չէ',
+          severity: 'error',
+        });
+        setLoading(false);
+        return;
+      }
 
-      if (students.includes(user.email)) {
-        localStorage.setItem('classCode', classCode);
-        localStorage.setItem('school', school);
+      if (mode === 'signin') {
+        const res = await signInWithEmailAndPassword(auth, email, password);
+
+        localStorage.setItem("classCode", activeClass);
+        localStorage.setItem("school", activeSchool);
 
         setPermission("write");
         onLogin();
+        setLoading(false);
       } else {
-        setSnackbar({ open: true, message: 'Դուք չունեք մուտքի թույլտվություն', severity: 'error' });
+        try {
+          const res = await createUserWithEmailAndPassword(auth, email, password);
+
+          localStorage.setItem("classCode", activeClass);
+          localStorage.setItem("school", activeSchool);
+
+          setPermission("write");
+          onLogin();
+          setLoading(false);
+        } catch {
+          setSnackbar({
+            open: true,
+            message: 'Գրանցումը ձախողվեց',
+            severity: 'error',
+          });
+          setLoading(false);
+        }
       }
-    } catch {
-      setSnackbar({ open: true, message: 'Սխալ էլ․ հասցե կամ գաղտնաբառ', severity: 'error' });
+    } catch (err) {
+      if (err.code === "auth/invalid-login-credentials") {
+        setSnackbar({
+          open: true,
+          message: 'Սխալ էլ․ հասցե կամ գաղտնաբառ',
+          severity: 'error',
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: 'Մուտքը ձախողվեց',
+          severity: 'error',
+        });
+      }
+      setLoading(false);
     }
   };
 
@@ -83,8 +121,11 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
 
   return (
     <>
-      <Paper elevation={4} sx={{ p: 4, maxWidth: 400, mx: 'auto', borderRadius: 3 }}>
-        <Typography variant="h5" mb={2}>Մուտք</Typography>
+      <Paper elevation={4} sx={{ p: 3, maxWidth: 400, mx: 'auto', borderRadius: 3 }}>
+        <Typography variant="h5" mb={2}>
+          {mode === 'signin' ? 'Մուտք' : 'Գրանցում'}
+        </Typography>
+
         <Box component="form" onSubmit={handleSubmit}>
           {/* <FormControl fullWidth margin="normal">
             <InputLabel>Նախընտրած դպրոց</InputLabel>
@@ -96,7 +137,6 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
               <MenuItem value="164">164</MenuItem>
             </Select>
           </FormControl> */}
-
           <TextField
             label="Դասարան"
             value={classCode}
@@ -124,13 +164,20 @@ export default function LoginPage({ setPermission, onLogin, classCode, setClassC
             type="submit"
             variant="contained"
             fullWidth
+            disabled={loading}
             sx={{
               mt: 3,
               backgroundColor: '#26b8b8',
               '&:hover': { backgroundColor: '#1ea0a0' },
             }}
           >
-            Մուտք
+            {mode === 'signin' ? 'Մուտք' : 'Գրանցում'}
+          </Button>
+        </Box>
+
+        <Box mt={1}>
+          <Button variant="text" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}>
+            {mode === 'signin' ? 'Գրանցվել' : 'Մուտք'}
           </Button>
         </Box>
       </Paper>
